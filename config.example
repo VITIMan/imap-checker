@@ -1,0 +1,4 @@
+[imap]
+host=imap.example.org
+user=user@example.org
+password=PASSWORD

@@ -47,11 +47,10 @@ Then execute:
 
 	imap_checker
 
-And that's it.
-
-If you want to stop, simply use:
+And that's it. If you want to stop, simply use:
 
 ::
+
     imap_checker --stop.
 
 Links

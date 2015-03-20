@@ -4,3 +4,14 @@
 /dist/
 # Python egg metadata, regenerated from source files by setuptools.
 /*.egg-info
+
+# OSX meta files
+.DS_Store
+
+# coverage library configuration
+.coverage
+# Related to Rope vim plugin
+.ropeproject
+
+.vagrant/
+.idea/

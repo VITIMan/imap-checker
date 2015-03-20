@@ -3,7 +3,7 @@
 
 from __future__ import absolute_import
 
-__title__ = 'mail-checker'
+__title__ = 'imap_checker'
 __version__ = '0.1.0'
 __author__ = 'Victoriano Navarro'
 __license__ = 'MIT License'

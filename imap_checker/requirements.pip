@@ -1,0 +1,2 @@
+python-daemon>=1.6.1
+pidfile>=0.1.0

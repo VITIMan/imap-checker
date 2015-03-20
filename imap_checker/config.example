@@ -2,3 +2,5 @@
 host=imap.example.org
 user=user@example.org
 password=PASSWORD
+# seconds between fetches (default: 30 seconds)
+fetch_time=30

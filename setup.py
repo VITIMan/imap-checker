@@ -28,24 +28,25 @@ You have two options
 
 ::
 
-	pip install imap_checker
+    pip install imap_checker
 
 - Clone github repo and install dependencies in requirements.pip file:
 
 ::
 
-	git clone https://github.com/VITIMan/imap-checker
+    git clone https://github.com/VITIMan/imap-checker
 
 Usage
 `````
 
-Simply copy imap_config.example and rename to .imap_conf in your home directory and change the host, user and password with your credentials.
+Simply copy imap_config.example and rename to .imap_conf in your home directory
+and change the host, user and password with your credentials.
 
 Then execute:
 
 ::
 
-	imap_checker
+    imap_checker
 
 And that's it. If you want to stop, simply use:
 

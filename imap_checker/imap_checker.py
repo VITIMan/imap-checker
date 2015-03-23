@@ -8,13 +8,13 @@
 # Notifications
 # http://crysol.org/es/node/1356
 # http://stackoverflow.com/questions/7331351/python-email-header-decoding-utf-8
+# log
+# http://stackoverflow.com/questions/13180720/maintaining-logging-and-or-stdout-stderr-in-python-daemon
 
 # http://stackoverflow.com/questions/4281821/pynotify-not-working-from-cron
 
 # python imports
 import ConfigParser
-import daemon
-# from daemon import runner
 import email.Header
 import imaplib
 import logging
@@ -26,10 +26,11 @@ import time
 from email.parser import HeaderParser
 from logconfig import LOGGING
 from optparse import OptionParser
-from pidfile import PidFile
 
 # 3rd. libraries imports
+import daemon
 import pynotify
+from pidfile import PidFile
 
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger(__name__)
@@ -110,23 +111,41 @@ def checker(host, user, password, fetch_time):
     while True:
         msg = check_mails(host, user, password)
 
-        if msg:
-            pynotify.init("Imap checker")
-            notification = pynotify.Notification(
-                msg["From"],
-                message=msg["Subject"],
-                icon="applications-email-panel")
-            notification.set_timeout(5000)
-            notification.show()
+        try:
+            if msg:
+                pynotify.init("Imap checker")
+                notification = pynotify.Notification(
+                    msg["From"],
+                    message=msg["Subject"],
+                    icon="applications-email-panel")
+                notification.set_timeout(5000)
+                notification.show()
 
-            # OSX notification test purposes
-            # from pync import Notifier
-            # Notifier.notify(msg["Subject"][:25], title=msg["From"][:10])
-            # Notifier.remove(os.getpid())
-            # Notifier.list(os.getpid())
-        else:
-            logger.debug("no email")
+                # OSX notification test purposes
+                # from pync import Notifier
+                # Notifier.notify(msg["Subject"][:25], title=msg["From"][:10])
+                # Notifier.remove(os.getpid())
+                # Notifier.list(os.getpid())
+            else:
+                logger.debug("no email")
+        except Exception:
+            logger.exception("error detected")
+            raise
         time.sleep(fetch_time)
+
+
+def stop_process():
+    try:
+        with open(pid_file, 'r') as f:
+            pid = int(f.readline())
+    except IOError:
+        print("Cannot open pidfile")
+    except (TypeError, ValueError):
+        print("Incorrect pidfile")
+
+    os.kill(pid, signal.SIGTERM)
+    logger.debug("Stop succesful")
+    sys.exit(0)
 
 
 def run():
@@ -135,25 +154,23 @@ def run():
                       action="store_true",
                       dest="debug",
                       help="debug, no daemonize")
-    parser.add_option("--stop",
-                      action="store_true",
+    parser.add_option("--stop", action="store_true",
                       dest="stop",
                       help="stop the process")
+    parser.add_option("--logfile",
+                      action="store",
+                      dest="log",
+                      help="output to a log file")
 
     opts, args = parser.parse_args()
 
+    # stop the process
     if opts.stop is not None:
         try:
-            with open(pid_file, 'r') as f:
-                pid = int(f.readline())
-        except IOError:
-            print("Cannot open pidfile")
-        except (TypeError, ValueError):
-            print("Incorrect pidfile")
-
-        os.kill(pid, signal.SIGTERM)
-        logger.debug("Stop succesful")
-        sys.exit(0)
+            stop_process()
+        except UnboundLocalError:
+            print "no process detected"
+            sys.exit(1)
 
     # signal preparation
     signal.signal(signal.SIGTERM, sig_terminate)
@@ -179,12 +196,12 @@ def run():
         # TODO kwargs
         logger.debug("Script execution for debugging purposes")
         checker(host, user, password, fetch_time)
-        # ImapChecker(host, user, password, fetch_time).run()
     else:
-        logger.debug("Daemonize")
-        ctxt = daemon.DaemonContext()
+        ctxt = daemon.DaemonContext(
+            files_preserve=[logger.root.handlers[1].stream],)
         ctxt.pidfile = PidFile(pid_file)
 
+        logger.debug("Daemonize")
         with ctxt:
             checker(host, user, password, fetch_time)
 

@@ -111,26 +111,25 @@ def checker(host, user, password, fetch_time):
     while True:
         msg = check_mails(host, user, password)
 
-        try:
-            if msg:
-                pynotify.init("Imap checker")
-                notification = pynotify.Notification(
-                    msg["From"],
-                    message=msg["Subject"],
-                    icon="applications-email-panel")
-                notification.set_timeout(5000)
-                notification.show()
+        if msg:
+            # issues in xfce4 when there is no notifications sent in a while
+            if pynotify.is_initted():
+                pynotify.uninit()
+            pynotify.init("Imap checker")
+            notification = pynotify.Notification(
+                msg["From"],
+                message=msg["Subject"],
+                icon="applications-email-panel")
+            notification.set_timeout(5000)
+            notification.show()
 
-                # OSX notification test purposes
-                # from pync import Notifier
-                # Notifier.notify(msg["Subject"][:25], title=msg["From"][:10])
-                # Notifier.remove(os.getpid())
-                # Notifier.list(os.getpid())
-            else:
-                logger.debug("no email")
-        except Exception:
-            logger.exception("error detected")
-            raise
+            # OSX notification test purposes
+            # from pync import Notifier
+            # Notifier.notify(msg["Subject"][:25], title=msg["From"][:10])
+            # Notifier.remove(os.getpid())
+            # Notifier.list(os.getpid())
+        else:
+            logger.debug("no email")
         time.sleep(fetch_time)
 
 
